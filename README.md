@@ -25,6 +25,16 @@ Para empezar a usar la app:
 2. Entrá en **Acceso y perfiles**, escribí la clave **`DOMOS2026`** y elegí un perfil (Operación, Revisor o Auditor).
 3. Ya podés modificar registros según tu perfil (ver más abajo).
 
+### Cambiar la clave del panel
+
+La clave está escrita en el código, en la constante `ACCESS_KEY` de `src/lib/domos/engine.ts`:
+
+```ts
+export const ACCESS_KEY = "DOMOS2026";
+```
+
+Cambiá el valor entre comillas, guardá y volvé a publicar. Es una clave **pública**: cualquiera que abra las herramientas del navegador puede leerla. Sirve para separar perfiles en una demo, no para proteger datos.
+
 ## 2. Dónde está cada cosa
 
 | Ruta / carpeta | Qué contiene |
@@ -38,7 +48,7 @@ Para empezar a usar la app:
 | `src/components/domos/pages.tsx` | Contenido de cada pantalla (panel, alumnos, historial, control, acceso) |
 | `src/components/domos/layout.tsx` | Menú lateral, barra superior, contexto global (sesión, avisos, guardado) |
 | `src/components/domos/student-form.tsx` | Formulario de alta y edición de alumnos |
-| `src/lib/domos/engine.ts` | **Motor**: reglas de cupo, lista de espera, comandos, eventos, propuestas, cierres, datos de ejemplo, exportación y migración |
+| `src/lib/domos/engine.ts` | **Motor**: reglas de cupo, lista de espera, comandos, eventos, propuestas, cierres, datos de ejemplo (`seed()`), exportación y migración |
 | `src/lib/domos/engine.test.ts` | Pruebas del motor |
 | `src/components/ui/` | Componentes de interfaz (shadcn/ui) |
 | `src/styles.css` | Estilos y tokens de diseño |
@@ -60,7 +70,7 @@ Para empezar a usar la app:
 | Revisor | Crear propuestas de cambio, aprobar o rechazar propuestas de otros actores, registrar cierres y restaurar copias |
 | Auditor | Solo consultar y exportar |
 
-Los actores sintéticos son Sol, Mar y Luz; sirven para probar la separación de decisiones (quien crea una propuesta no puede decidirla).
+Los actores sintéticos son Sol, Mar y Luz; sirven para probar la separación de decisiones (quien crea una propuesta no puede decidirla). Las reglas de cada perfil se aplican en el motor (`apply` en `engine.ts`), no solo ocultando botones, pero siguen siendo una demo local y **no son seguridad real**.
 
 ## 3. Qué está simulado
 
@@ -68,7 +78,7 @@ Esta app es una demo. **Nada sale del navegador.**
 
 | Funcionalidad | Estado | Cómo se comporta |
 | --- | --- | --- |
-| Autenticación | Simulada | La clave `DOMOS2026` está en `ACCESS_KEY` (`src/lib/domos/engine.ts`) y es pública en el código del navegador. Elegir un perfil **no verifica identidad**. La sesión se guarda en `sessionStorage` (clave `domos-perfil`) y se pierde al cerrar la pestaña. |
+| Autenticación | Simulada | La clave `DOMOS2026` está en `ACCESS_KEY` y es pública en el código del navegador. Elegir un perfil **no verifica identidad**. La sesión se guarda en `sessionStorage` (clave `domos-perfil`) y se pierde al cerrar la pestaña. |
 | Base de datos | Simulada | Todo vive en `localStorage` (clave `domos-park-practicas-v2`). Cada navegador y cada equipo tiene sus propios datos. |
 | Correos | **No existe** | La app no envía correos. Ningún botón dispara un email. |
 | WhatsApp y mensajería | **No existe** | No hay avisos ni mensajes a alumnos (por ejemplo, al pasar de la lista de espera a anotado). La promoción es solo un cambio de estado en el panel. |
@@ -78,12 +88,16 @@ Esta app es una demo. **Nada sale del navegador.**
 
 ## 4. Datos de ejemplo y cómo reiniciarlos
 
-Al abrir la app por primera vez (cuando no existe la clave `domos-park-practicas-v2`) se cargan datos de ejemplo:
+### Cómo se preparan los datos sintéticos
 
-- 5 prácticas.
-- 26 alumnos (15 huéspedes y 11 visitantes).
+La función `seed()` de `src/lib/domos/engine.ts` arma todos los datos de ejemplo. Se ejecuta **solo si no existe** la clave `domos-park-practicas-v2` en `localStorage`; si la clave existe, la app no vuelve a cargar la semilla. Para cambiar los datos de ejemplo, editá `seed()` (prácticas, nombres, estados) y reiniciá el almacenamiento local como se explica abajo.
+
+La semilla contiene:
+
+- 5 prácticas con cupo y precio de visitante de ejemplo: Yoga suave al amanecer (12 lugares), Hatha yoga (14), Meditación al atardecer (10), Respiración y estiramiento en la playa (16) y Retiro de fin de semana (8).
+- 26 alumnos (15 huéspedes con número de domo y 11 visitantes de día).
 - Meditación completa (10/10) y 2 personas en lista de espera.
-- 6 comandos (uno rechazado, sin evento), 2 propuestas y 1 cierre con un ajuste no aplicado.
+- 6 comandos (5 aplicados y 1 rechazado sin evento), 2 propuestas (una pendiente y una rechazada) y 1 cierre con un ajuste no aplicado.
 
 ### Reiniciar los datos de ejemplo
 
@@ -108,9 +122,11 @@ Para borrar absolutamente todo lo local de la app, `localStorage.clear()` tambi�
 
 > Esto elimina también el historial y los cambios que hayas hecho. Si querés conservarlos, antes descargá una copia desde **Control y exportación → Descargar copia JSON**. Después se puede recuperar con **Restaurar copia** (perfil Revisor).
 
+> Si cambiás la semilla en el código, los navegadores que ya la cargaron siguen mostrando los datos viejos hasta que reinicies su `localStorage`.
+
 ## 5. Reglas de negocio
 
-Solo los alumnos **Anotados** cuentan para el cupo. Cancelar o borrar a un Anotado promociona a una sola persona de la lista de espera, por orden de alta. Los cambios hacia una práctica completa se rechazan sin perder el origen. **Nueva semana** borra solo los Cancelados y conserva el historial.
+Solo los alumnos **Anotados** cuentan para el cupo. Con 2 lugares o menos, la práctica muestra «Últimos lugares»; en cero, «Completa», y las nuevas altas van a Lista de espera. Cancelar o borrar a un Anotado promociona a una sola persona de la lista de espera, por orden de alta. Los cambios hacia una práctica completa se rechazan sin perder el origen. **Nueva semana** borra solo los Cancelados y conserva el historial.
 
 Los cambios se validan en el motor y se guardan antes de mostrar éxito. Los conflictos entre pestañas, las revisiones desactualizadas y los fallos de almacenamiento conservan el estado anterior y el borrador. Un mismo id de comando es idempotente y no puede reutilizarse con datos distintos. Las condiciones inválidas no escriben nada: el comando rechazado de la semilla ilustra la ausencia de eventos.
 
