@@ -1,4 +1,5 @@
 <!-- LOVABLE:BEGIN -->
+
 > [!IMPORTANT]
 > This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
 > published git history — force pushing, or rebasing/amending/squashing commits
@@ -27,4 +28,12 @@ use the editor.
   `LOVABLE_API_KEY`. When Lovable does not provide one, users can bring their
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
+
 <!-- LOVABLE:END -->
+
+## Application architecture
+
+- Keep all mutations, role checks, capacity rules and snapshot validation in the pure local engine; UI controls must not be the only enforcement.
+- Persist a validated snapshot atomically before updating React state; failed writes keep both prior state and the form draft.
+- Shared context owns browser storage after hydration; leaf routes expose individual page metadata and share the application shell.
+- Derive occupied seats exclusively from enrolled students and reconcile them against source events; never apply pending adjustments to live counters.
