@@ -34,6 +34,7 @@ use the editor.
 ## Application architecture
 
 - Keep all mutations, role checks, capacity rules and snapshot validation in the pure local engine; UI controls must not be the only enforcement.
+- Existing-student forms submit proposals for non-auditor profiles, and the engine rejects direct Operation edits; this keeps approval mandatory even outside the UI.
 - Persist a validated snapshot atomically before updating React state; failed writes keep both prior state and the form draft.
 - Shared context owns browser storage after hydration; leaf routes expose individual page metadata and share the application shell.
 - Derive occupied seats exclusively from enrolled students and reconcile them against source events; never apply pending adjustments to live counters.

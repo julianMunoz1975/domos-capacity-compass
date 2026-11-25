@@ -404,9 +404,15 @@ export function PanelPage() {
                 <h2 className="practice-name">{p.nombre}</h2>
                 <div className="card-meta">
                   <Clock3 size={12} />
-                  <span>{p.horario} hs</span>
-                  <span className="mx-1">·</span>
-                  <span>{p.duracion >= 60 ? `${p.duracion / 60} h` : `${p.duracion} min`}</span>
+                  {p.id === "retiro" ? (
+                    <span>2 jornadas · Sáb a Dom</span>
+                  ) : (
+                    <>
+                      <span>{p.horario} hs</span>
+                      <span className="mx-1">·</span>
+                      <span>{p.duracion >= 60 ? `${p.duracion / 60} h` : `${p.duracion} min`}</span>
+                    </>
+                  )}
                 </div>
                 <p className="text-[9px] text-chalk-muted mt-2 tracking-[1px]">{p.dias}</p>
                 <div className="chalk-divider" />

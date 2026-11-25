@@ -22,7 +22,7 @@
  * classes (e.g. --color-primary -> bg-primary, text-primary).
  *
  * The :root and .dark blocks define the actual color values using oklch.
- * All colors MUST use oklch format.
+ * Brand colors are exact palette values; supporting roles derive from those tokens.
  *
  * To add a new semantic color:
  * 1. Add the variable to :root (light value) and .dark (dark value)
@@ -74,50 +74,54 @@
 
 :root {
   --radius: 0.5rem;
-  --background: oklch(0.985 0.005 85);
-  --foreground: oklch(0.29 0.039 236);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.34 0.051 232);
-  --primary-foreground: oklch(0.984 0.003 247.858);
-  --secondary: oklch(0.953 0.016 83);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.958 0.008 85);
-  --muted-foreground: oklch(0.55 0.022 235);
-  --accent: oklch(0.938 0.018 163);
-  --accent-foreground: oklch(0.208 0.042 265.755);
-  --destructive: oklch(0.44 0.08 22);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.913 0.009 85);
-  --input: oklch(0.878 0.014 85);
-  --ring: oklch(0.55 0.069 165);
-  --chalk: oklch(0.975 0.016 95);
-  --chalk-muted: oklch(0.77 0.029 190);
-  --board: oklch(0.32 0.034 227);
-  --board-green: oklch(0.35 0.033 164);
-  --board-teal: oklch(0.35 0.036 200);
-  --coral: oklch(0.78 0.105 35);
-  --success: oklch(0.48 0.052 161);
-  --success-soft: oklch(0.945 0.024 160);
-  --sand: oklch(0.952 0.022 83);
-  --overlay: oklch(0.23 0.025 235 / 55%);
-  --photo-shade: linear-gradient(90deg, oklch(0.24 0.03 230 / 70%), oklch(0.24 0.03 230 / 5%));
-  --shadow-soft: 0 4px 16px oklch(0.25 0.02 235 / 5%);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.984 0.003 247.858);
-  --sidebar-foreground: oklch(0.129 0.042 264.695);
-  --sidebar-primary: oklch(0.208 0.042 265.755);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.968 0.007 247.896);
-  --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
-  --sidebar-border: oklch(0.929 0.013 255.508);
-  --sidebar-ring: oklch(0.704 0.04 256.788);
+  --sand: #f3e9d7;
+  --primary: #1f4e6b;
+  --coral: #e2725b;
+  --accent: #8fb8b3;
+  --foreground: #2a2a2a;
+  --card: #ffffff;
+  --background: var(--sand);
+  --card-foreground: var(--foreground);
+  --popover: var(--card);
+  --popover-foreground: var(--foreground);
+  --primary-foreground: var(--card);
+  --secondary: color-mix(in srgb, var(--accent) 20%, var(--card));
+  --secondary-foreground: var(--primary);
+  --muted: color-mix(in srgb, var(--sand) 55%, var(--card));
+  --muted-foreground: color-mix(in srgb, var(--foreground) 75%, var(--card));
+  --accent-foreground: var(--foreground);
+  --destructive: var(--primary);
+  --destructive-foreground: var(--card);
+  --border: color-mix(in srgb, var(--primary) 18%, var(--sand));
+  --input: color-mix(in srgb, var(--primary) 28%, var(--sand));
+  --ring: var(--primary);
+  --chalk: var(--card);
+  --chalk-muted: color-mix(in srgb, var(--accent) 55%, var(--card));
+  --board: var(--primary);
+  --board-green: color-mix(in srgb, var(--primary) 85%, var(--accent));
+  --board-teal: color-mix(in srgb, var(--primary) 92%, var(--accent));
+  --success: var(--primary);
+  --success-soft: color-mix(in srgb, var(--accent) 25%, var(--card));
+  --overlay: color-mix(in srgb, var(--primary) 55%, transparent);
+  --photo-shade: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--primary) 70%, transparent),
+    color-mix(in srgb, var(--primary) 5%, transparent)
+  );
+  --shadow-soft: 0 4px 16px color-mix(in srgb, var(--foreground) 5%, transparent);
+  --chart-1: var(--primary);
+  --chart-2: var(--accent);
+  --chart-3: var(--foreground);
+  --chart-4: var(--sand);
+  --chart-5: color-mix(in srgb, var(--primary) 50%, var(--accent));
+  --sidebar: var(--card);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--card);
+  --sidebar-accent: var(--success-soft);
+  --sidebar-accent-foreground: var(--primary);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
 }
 
 .dark {
@@ -135,7 +139,7 @@
   --muted-foreground: oklch(0.704 0.04 256.788);
   --accent: oklch(0.279 0.041 260.031);
   --accent-foreground: oklch(0.984 0.003 247.858);
-  --destructive: oklch(0.704 0.191 22.216);
+  --destructive: var(--primary);
   --destructive-foreground: oklch(0.984 0.003 247.858);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
@@ -169,8 +173,8 @@
 }
 
 @theme inline {
-  --font-sans: "DM Sans", sans-serif;
-  --font-display: "Lora", Georgia, serif;
+  --font-sans: "Karla", sans-serif;
+  --font-display: "Cormorant Garamond", Georgia, serif;
   --font-chalk: "Caveat", cursive;
   --color-chalk: var(--chalk);
   --color-chalk-muted: var(--chalk-muted);
@@ -403,7 +407,7 @@
   transform: translateY(-3px);
 }
 .practice-name {
-  font-family: var(--font-chalk);
+  font-family: var(--font-display);
   font-size: 31px;
   line-height: 1.08;
   font-weight: 500;

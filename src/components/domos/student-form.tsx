@@ -44,7 +44,8 @@ export function StudentForm({
   if (!snapshot) return null;
   const practice = snapshot.practicas.find((p) => p.id === draft.practicaId);
   const full = practice ? occupied(snapshot, practice.id) >= practice.cupo : false;
-  const proposal = actor?.perfil === "Revisor" && initial !== null;
+  const proposal =
+    initial !== null && (actor?.perfil === "Operación" || actor?.perfil === "Revisor");
   return (
     <Dialog
       open
@@ -59,7 +60,7 @@ export function StudentForm({
             <span className="eyebrow">REGISTRO DE ALUMNOS</span>
           </div>
           <DialogTitle className="font-display text-2xl font-medium">
-            {initial ? "Editar alumno" : "Anotar un alumno"}
+            {proposal ? "Proponer cambios" : initial ? "Editar alumno" : "Anotar un alumno"}
           </DialogTitle>
           <DialogDescription>
             {initial ? initial.nombre : "Un nuevo momento de bienestar en Domos Park."}

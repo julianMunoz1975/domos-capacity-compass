@@ -107,10 +107,77 @@ describe("reglas de Domos Park", () => {
     const s = seed();
     const a = s.alumnos.find((a) => a.practicaId === "yoga");
     if (!a) throw new Error("Sin alumno");
-    expect(() => apply(s, action(s, "editar", a.id, { ...a, practicaId: "meditacion" }))).toThrow(
-      "destino",
-    );
+    const pending = apply(
+      s,
+      action(s, "proponer", a.id, { ...a, practicaId: "meditacion" }),
+    ).snapshot;
+    const proposal = pending.propuestas.at(-1);
+    if (!proposal) throw new Error("Sin propuesta");
+    expect(() =>
+      apply(pending, {
+        ...action(pending, "decidir", proposal.id),
+        id: "approve-full",
+        actor: { perfil: "Revisor", nombre: "Mar · demo" },
+        datos: { motivo: "Revisión", aprobar: true },
+      }),
+    ).toThrow("destino");
     expect(s.alumnos.find((item) => item.id === a.id)?.practicaId).toBe("yoga");
+  });
+  it("Operación no puede editar directamente un alumno", () => {
+    const s = seed();
+    const student = s.alumnos[0];
+    if (!student) throw new Error("Sin alumno");
+    const store = adapter(s);
+    expect(() =>
+      transact(
+        s,
+        action(s, "editar", student.id, { ...student, nombre: "Nombre cambiado" }),
+        store,
+      ),
+    ).toThrow("Operación debe enviar una propuesta");
+    expect(load(store)).toEqual(s);
+  });
+  it("Operación propone sin alterar alumnos ni cupos", () => {
+    const s = seed();
+    const student = s.alumnos[0];
+    if (!student) throw new Error("Sin alumno");
+    const store = adapter(s);
+    const pending = transact(
+      s,
+      action(s, "proponer", student.id, { ...student, nombre: "Nombre propuesto" }),
+      store,
+    ).snapshot;
+    expect(pending.alumnos).toEqual(s.alumnos);
+    expect(occupied(pending, "meditacion")).toBe(10);
+    expect(pending.propuestas.at(-1)).toMatchObject({
+      creador: actor,
+      decision: "Pendiente",
+      cambios: { nombre: "Nombre propuesto" },
+    });
+    expect(load(store)).toEqual(pending);
+  });
+  it("solo Revisor decide una propuesta de Operación", () => {
+    const s = seed();
+    const student = s.alumnos[0];
+    if (!student) throw new Error("Sin alumno");
+    const pending = apply(
+      s,
+      action(s, "proponer", student.id, { ...student, nombre: "Nombre aprobado" }),
+    ).snapshot;
+    const proposal = pending.propuestas.at(-1);
+    if (!proposal) throw new Error("Sin propuesta");
+    const decision: Action = {
+      ...action(pending, "decidir", proposal.id),
+      id: "approve-operation",
+      datos: { motivo: "Revisión", aprobar: true },
+    };
+    expect(() => apply(pending, decision)).toThrow("requiere el perfil Revisor");
+    const approved = apply(pending, {
+      ...decision,
+      actor: { perfil: "Revisor", nombre: "Mar · demo" },
+    }).snapshot;
+    expect(approved.alumnos.find((a) => a.id === student.id)?.nombre).toBe("Nombre aprobado");
+    expect(approved.propuestas.at(-1)?.decision).toBe("Aprobada");
   });
   it("mismo comando un solo efecto; datos distintos rechazan", () => {
     const s = seed();

@@ -59,7 +59,7 @@ export function DomosProvider({ children }: { children: ReactNode }) {
   const [practice, setPractice] = useState("");
   const [origin, setOrigin] = useState("");
   const [search, setSearch] = useState("");
-  const notify = (text: string, error = false) => setNotice({ text, error });
+  const notify = (text: string, error = false) => setNotice(text.trim() ? { text, error } : null);
   const reload = () => {
     try {
       setSnapshot(load(window.localStorage));
@@ -297,7 +297,7 @@ export function DomosShell({ children }: { children: ReactNode }) {
           </div>
         </header>
         <main className="page-content">
-          {notice && (
+          {notice?.text.trim() && (
             <div
               className={`notice ${notice.error ? "error" : ""}`}
               role={notice.error ? "alert" : "status"}

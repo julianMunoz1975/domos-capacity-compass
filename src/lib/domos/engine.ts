@@ -499,6 +499,8 @@ export function apply(
   if (!action.datos.motivo.trim()) throw new Error("Indicá el motivo del cambio.");
   if (action.actor.perfil === "Revisor" && !["proponer", "decidir", "cierre"].includes(action.tipo))
     throw new Error("Revisor debe enviar una propuesta, no editar directamente.");
+  if (action.actor.perfil === "Operación" && action.tipo === "editar")
+    throw new Error("Operación debe enviar una propuesta, no editar directamente.");
   if (["decidir", "cierre"].includes(action.tipo) && action.actor.perfil !== "Revisor")
     throw new Error("Esta acción requiere el perfil Revisor.");
   const next = structuredClone(s);
