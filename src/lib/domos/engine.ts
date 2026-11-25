@@ -147,8 +147,8 @@ export function seed(): Snapshot {
     {
       id: "yoga",
       nombre: "Yoga suave al amanecer",
-      dias: "LUN · MIÉ · VIE",
-      horario: "07:30",
+      dias: "MAR · JUE",
+      horario: "08:00",
       duracion: 60,
       cupo: 12,
       precioVisitante: 12000,
@@ -156,7 +156,7 @@ export function seed(): Snapshot {
     {
       id: "hatha",
       nombre: "Hatha yoga",
-      dias: "MAR · JUE · SÁB",
+      dias: "LUN · MIÉ · VIE",
       horario: "10:00",
       duracion: 75,
       cupo: 14,
@@ -165,25 +165,25 @@ export function seed(): Snapshot {
     {
       id: "meditacion",
       nombre: "Meditación al atardecer",
-      dias: "TODOS LOS DÍAS",
-      horario: "18:30",
+      dias: "VIE · SÁB",
+      horario: "19:30",
       duracion: 45,
       cupo: 10,
       precioVisitante: 9000,
     },
     {
       id: "respiracion",
-      nombre: "Respiración en la playa",
-      dias: "MAR · JUE · DOM",
-      horario: "08:30",
-      duracion: 45,
+      nombre: "Respiración y estiramiento en la playa",
+      dias: "SÁB",
+      horario: "09:00",
+      duracion: 50,
       cupo: 16,
       precioVisitante: 10000,
     },
     {
       id: "retiro",
-      nombre: "Retiro de yoga y meditación",
-      dias: "SÁBADO",
+      nombre: "Retiro de fin de semana",
+      dias: "SÁB A DOM · 2 JORNADAS",
       horario: "09:00",
       duracion: 360,
       cupo: 8,
@@ -500,7 +500,7 @@ export function apply(
   if (action.actor.perfil === "Revisor" && !["proponer", "decidir", "cierre"].includes(action.tipo))
     throw new Error("Revisor debe enviar una propuesta, no editar directamente.");
   if (action.actor.perfil === "Operación" && action.tipo === "editar")
-    throw new Error("Operación debe enviar una propuesta, no editar directamente.");
+    throw new Error("Operación debe proponer cambios; Revisor los decide.");
   if (["decidir", "cierre"].includes(action.tipo) && action.actor.perfil !== "Revisor")
     throw new Error("Esta acción requiere el perfil Revisor.");
   const next = structuredClone(s);
@@ -571,10 +571,14 @@ export function apply(
     )
       promote(before.practicaId);
   };
-  if (action.tipo === "alta" || action.tipo === "editar") {
+  if (action.tipo === "alta") {
     if (!action.datos.alumno || action.datos.alumno.id !== action.entidad)
       throw new Error("Falta un alumno válido.");
-    edit(action.datos.alumno, action.tipo === "alta");
+    edit(action.datos.alumno, true);
+  } else if (action.tipo === "editar") {
+    if (!action.datos.alumno || action.datos.alumno.id !== action.entidad)
+      throw new Error("Falta un alumno válido.");
+    edit(action.datos.alumno, false);
   } else if (action.tipo === "cancelar" || action.tipo === "borrar") {
     const index = next.alumnos.findIndex((a) => a.id === action.entidad);
     const a = next.alumnos[index];
