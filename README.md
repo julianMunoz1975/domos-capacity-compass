@@ -16,85 +16,99 @@ bun run build      # compilación de producción
 bun run preview    # sirve la compilación local
 bun run lint       # ESLint
 bun run test       # todas las pruebas (Vitest)
-bunx vitest run src/lib/domos/engine.test.ts src/test/app-routing.test.tsx   # pruebas del motor y del enrutado
 ```
 
 Para empezar a usar la app:
 
 1. Abrí la app. El panel se puede consultar sin ingresar.
-2. Entrá en **Acceso y perfiles**, escribí la clave **`DOMOS2026`** y elegí un perfil (Operación, Revisor o Auditor).
-3. Ya podés modificar registros según tu perfil (ver más abajo).
+2. Entrá en **Acceso y perfiles**, escribí la clave **`DOMOS2026`** y elegí un perfil.
+3. Ya podés operar según tu perfil (ver más abajo).
+
+### Cambiar la clave del panel
+
+La clave está en la constante `ACCESS_KEY` de `src/lib/domos/engine.ts`:
+
+```ts
+export const ACCESS_KEY = "DOMOS2026";
+```
+
+Cambiá el valor entre comillas, guardá y volvé a publicar. Es una clave **pública en el código del navegador**; sirve para separar perfiles en una demo, no para proteger datos reales.
 
 ## 2. Dónde está cada cosa
 
 | Ruta / carpeta | Qué contiene |
-| --- | --- |
+|---|---|
 | `src/routes/index.tsx` | Pantalla **Panel de cupos** (`/`) |
 | `src/routes/alumnos.tsx` | Pantalla **Alumnos** (`/alumnos`) |
 | `src/routes/historial.tsx` | Pantalla **Historial** (`/historial`) |
 | `src/routes/control.tsx` | Pantalla **Control y exportación** (`/control`) |
 | `src/routes/acceso.tsx` | Pantalla **Acceso y perfiles** (`/acceso`) |
-| `src/routes/__root.tsx` | Estructura raíz de la app y páginas de error |
-| `src/components/domos/pages.tsx` | Contenido de cada pantalla (panel, alumnos, historial, control, acceso) |
-| `src/components/domos/layout.tsx` | Menú lateral, barra superior, contexto global (sesión, avisos, guardado) |
-| `src/components/domos/student-form.tsx` | Formulario de alta y edición de alumnos |
-| `src/lib/domos/engine.ts` | **Motor**: reglas de cupo, lista de espera, comandos, eventos, propuestas, cierres, datos de ejemplo, exportación y migración |
+| `src/routes/__root.tsx` | Raíz de la app, tipografía, páginas de error |
+| `src/components/domos/pages.tsx` | Contenido de cada pantalla |
+| `src/components/domos/layout.tsx` | Menú, barra superior, contexto global |
+| `src/components/domos/student-form.tsx` | Formulario de alta, edición y propuesta |
+| `src/lib/domos/engine.ts` | **Motor**: reglas de cupo, lista de espera, comandos, eventos, propuestas, cierres, semilla, exportación y migración |
 | `src/lib/domos/engine.test.ts` | Pruebas del motor |
-| `src/components/ui/` | Componentes de interfaz (shadcn/ui) |
-| `src/styles.css` | Estilos y tokens de diseño |
-| `roadmap.md` | Estado de las tareas |
+| `src/components/ui/` | Componentes shadcn/ui |
+| `src/styles.css` | Paleta y tokens de diseño |
+| `roadmap.md` | Estado de tareas |
 
 ### Pantallas
 
-- **Panel de cupos**: ocupación por práctica, lista de espera, filtros (práctica, procedencia, búsqueda), vista de tarjetas o lista, alta rápida y botón **Nueva semana**.
-- **Alumnos**: tabla con editar, cambiar de práctica, anotar, cancelar inscripción y borrar; exporta el CSV del filtro vigente.
-- **Historial**: eventos y comandos con filtros por registro y por fechas, y detalle de cada evento (estado anterior y nuevo).
-- **Control y exportación**: conciliación de cupos, cierres, propuestas de revisión, descarga de CSV y de copia JSON, y restauración de copias.
+- **Panel de cupos**: ocupación por práctica, lista de espera, filtros (práctica, procedencia, búsqueda), vista tarjetas o lista, alta rápida y botón **Nueva semana**.
+- **Alumnos**: tabla con proponer cambio, cancelar inscripción y borrar; exporta CSV del filtro vigente.
+- **Historial**: eventos y comandos con filtros por registro y fechas, con estado anterior y nuevo.
+- **Control y exportación**: conciliación, cierres, propuestas, CSV y copia JSON, restauración.
 - **Acceso y perfiles**: ingreso con clave local y elección de perfil.
 
 ### Perfiles
 
 | Perfil | Puede |
-| --- | --- |
-| Operación | Dar de alta, editar, cancelar y borrar alumnos; empezar una nueva semana |
-| Revisor | Crear propuestas de cambio, aprobar o rechazar propuestas de otros actores, registrar cierres y restaurar copias |
+|---|---|
+| Operación | Alta de alumnos, cancelar, borrar, nueva semana y **proponer** cambios de edición |
+| Revisor | Aprobar o rechazar propuestas (no las propias), registrar cierres y restaurar copias |
 | Auditor | Solo consultar y exportar |
 
-Los actores sintéticos son Sol, Mar y Luz; sirven para probar la separación de decisiones (quien crea una propuesta no puede decidirla).
+Las reglas se aplican en el motor (`engine.ts`), no solo ocultando botones. Siguen siendo una demo local sin autenticación real entre dispositivos.
 
 ## 3. Qué está simulado
 
 Esta app es una demo. **Nada sale del navegador.**
 
 | Funcionalidad | Estado | Cómo se comporta |
-| --- | --- | --- |
-| Autenticación | Simulada | La clave `DOMOS2026` está en `ACCESS_KEY` (`src/lib/domos/engine.ts`) y es pública en el código del navegador. Elegir un perfil **no verifica identidad**. La sesión se guarda en `sessionStorage` (clave `domos-perfil`) y se pierde al cerrar la pestaña. |
-| Base de datos | Simulada | Todo vive en `localStorage` (clave `domos-park-practicas-v2`). Cada navegador y cada equipo tiene sus propios datos. |
-| Correos | **No existe** | La app no envía correos. Ningún botón dispara un email. |
-| WhatsApp y mensajería | **No existe** | No hay avisos ni mensajes a alumnos (por ejemplo, al pasar de la lista de espera a anotado). La promoción es solo un cambio de estado en el panel. |
-| Pagos | **No existe** | Los precios de visitantes que se ven en las tarjetas son informativos. No hay cobro, pasarela de pago ni facturación. |
-| Invitar a colaboradores | **No existe** | Compartir el proyecto se hace desde Lovable; la app no invita a nadie. |
-| Datos de personas | Sintéticos | Nombres, domos y horarios son ejemplos. **No ingreses datos personales ni de salud reales.** |
+|---|---|---|
+| Autenticación | Simulada | Clave pública en el código. La sesión se guarda en `sessionStorage` (`domos-perfil`) y se pierde al cerrar la pestaña. |
+| Base de datos | Simulada | Todo vive en `localStorage` (`domos-park-practicas-v2`). Cada navegador tiene sus propios datos. |
+| Correos | No existe | La app no envía correos ni dispara emails. |
+| WhatsApp y mensajería | No existe | No hay avisos a alumnos al pasar de lista de espera a anotado. |
+| Pagos | No existe | Los precios de visitantes son informativos. No hay cobro ni pasarela. |
+| Datos de personas | Sintéticos | Nombres, domos y horarios son ejemplos. No ingreses datos reales. |
 
 ## 4. Datos de ejemplo y cómo reiniciarlos
 
-Al abrir la app por primera vez (cuando no existe la clave `domos-park-practicas-v2`) se cargan datos de ejemplo:
+### Cómo se preparan los datos sintéticos
 
-- 5 prácticas.
-- 26 alumnos (15 huéspedes y 11 visitantes).
-- Meditación completa (10/10) y 2 personas en lista de espera.
-- 6 comandos (uno rechazado, sin evento), 2 propuestas y 1 cierre con un ajuste no aplicado.
+La función `seed()` en `src/lib/domos/engine.ts` arma todos los datos de ejemplo. Se ejecuta **solo si no existe** la clave `domos-park-practicas-v2` en `localStorage`. Para cambiar los datos de ejemplo, editá `seed()` y reiniciá el almacenamiento local.
+
+La semilla contiene:
+
+- **5 prácticas** con días, horarios, cupos y precios según el catálogo:
+  - Yoga suave al amanecer — MAR · JUE, 08:00, 60 min, cupo 12, $12.000
+  - Hatha yoga — LUN · MIÉ · VIE, 10:00, 75 min, cupo 14, $14.000
+  - Meditación al atardecer — VIE · SÁB, 19:30, 45 min, cupo 10, $9.000
+  - Respiración y estiramiento en la playa — SÁB, 09:00, 50 min, cupo 16, $10.000
+  - Retiro de fin de semana — SÁB A DOM · 2 JORNADAS, 09:00, cupo 8, $95.000
+- **26 alumnos** (15 huéspedes con número de domo, 11 visitantes de día)
+- Meditación **completa** (10/10) con 2 personas en lista de espera
+- 6 comandos (5 aplicados, 1 rechazado sin evento), 2 propuestas (1 pendiente, 1 rechazada) y 1 cierre con 1 ajuste no aplicado
 
 ### Reiniciar los datos de ejemplo
 
-Los cambios que hagas se conservan al recargar. Para volver al estado inicial hay que borrar el `localStorage`:
-
 **Opción A: desde las herramientas del navegador**
 
-1. Abrí las herramientas de desarrollo (F12).
-2. Andá a **Application** (Chrome, Edge) o **Storage** (Firefox).
-3. En **Local Storage**, seleccioná el sitio y borrá la clave `domos-park-practicas-v2` (o usá "Clear All").
-4. Recargá la página: se vuelve a crear la semilla.
+1. F12 → **Application** (Chrome/Edge) o **Storage** (Firefox)
+2. Local Storage → seleccioná el sitio → borrá `domos-park-practicas-v2`
+3. Recargá: se vuelve a cargar la semilla
 
 **Opción B: desde la consola**
 
@@ -104,22 +118,21 @@ sessionStorage.removeItem("domos-perfil");
 location.reload();
 ```
 
-Para borrar absolutamente todo lo local de la app, `localStorage.clear()` también sirve.
-
-> Esto elimina también el historial y los cambios que hayas hecho. Si querés conservarlos, antes descargá una copia desde **Control y exportación → Descargar copia JSON**. Después se puede recuperar con **Restaurar copia** (perfil Revisor).
+> Antes de reiniciar, descargá una copia desde **Control y exportación → Descargar copia JSON** si querés conservar los datos actuales. Se puede restaurar con el perfil Revisor.
 
 ## 5. Reglas de negocio
 
-Solo los alumnos **Anotados** cuentan para el cupo. Cancelar o borrar a un Anotado promociona a una sola persona de la lista de espera, por orden de alta. Los cambios hacia una práctica completa se rechazan sin perder el origen. **Nueva semana** borra solo los Cancelados y conserva el historial.
+Solo los alumnos **Anotados** cuentan para el cupo. Con 2 lugares o menos se muestra «Últimos lugares»; en cero, «Completa» y las nuevas altas van a Lista de espera. Cancelar o borrar un Anotado de una práctica completa promociona al primero de la lista de espera. Los cambios hacia una práctica completa se rechazan sin perder el origen. **Nueva semana** borra solo los Cancelados y conserva el historial.
 
-Los cambios se validan en el motor y se guardan antes de mostrar éxito. Los conflictos entre pestañas, las revisiones desactualizadas y los fallos de almacenamiento conservan el estado anterior y el borrador. Un mismo id de comando es idempotente y no puede reutilizarse con datos distintos. Las condiciones inválidas no escriben nada: el comando rechazado de la semilla ilustra la ausencia de eventos.
+Operación **propone** los cambios de edición; Revisor los decide. El creador de una propuesta no puede aprobarla. Auditor no modifica datos. Las reglas se validan en el motor antes de guardar.
 
 ## 6. Copias y migración
 
-**Control y exportación** descarga el CSV del filtro combinado vigente (práctica, procedencia, búsqueda) y una copia JSON completa. El Revisor puede restaurar tras la validación y confirmación. Se rechaza toda la copia ante ids repetidos, referencias inválidas, exceso de cupo o falta de conciliación.
-
-Formato v1: misma estructura base con `schemaVersion: 1`; los campos de propuestas, cierres y ajustes ausentes se completan con arreglos vacíos. La migración valida todo antes de escribir y conserva ids y cantidades. Los formatos antiguos distintos se rechazan sin restauración parcial. Restaurar reemplaza el snapshot completo, no lo mezcla: exportá un respaldo actual antes de restaurar.
+Control y exportación descarga el CSV del filtro vigente y una copia JSON completa. Revisor puede restaurar con validación previa. Se rechaza ante ids repetidos, referencias inválidas, exceso de cupo o falta de conciliación. Restaurar reemplaza el snapshot completo; exportá antes si querés conservar los datos actuales.
 
 ## 7. Compartir el proyecto
 
-Destinatario solicitado: partners@kodarvia.com. Compartir el proyecto requiere acceso al control de colaboradores del proyecto en Lovable; un enlace por sí solo no concede permisos de edición. La app no envía correos ni invita a nadie.
+URL publicada: https://domos-capacity-compass.lovable.app  
+Contacto de encargo: partners@kodarvia.com (no contactar al cliente directamente)
+
+Compartir acceso de edición al proyecto se hace desde Lovable → Compartir. La app no envía invitaciones.
